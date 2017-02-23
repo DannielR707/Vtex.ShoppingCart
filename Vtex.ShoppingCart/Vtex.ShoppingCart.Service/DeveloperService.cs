@@ -31,7 +31,7 @@ namespace Vtex.ShoppingCart.Service
                 var user = await _client.User.Get(member.Login);
                 var repositories = await _client.Repository.GetAllForUser(member.Login);
 
-                int stars = countRepostoriesStars(repositories);
+                int stars = countStarsInRepositories(repositories);
 
                 decimal developerPrice = _priceService.CalculateDeveloperPrice(new PricingCriteria()
                 {
@@ -55,53 +55,15 @@ namespace Vtex.ShoppingCart.Service
 
      
 
-        public int countRepostoriesStars(IReadOnlyList<Repository> repositories)
+        public int countStarsInRepositories(IReadOnlyList<Repository> repositories)
         {
             int stars = 0;
-            
             foreach (var repository in repositories)
             {
-                stars = stars + repository.StargazersCount;
+                stars += repository.StargazersCount;
             }
-
             return stars;
         }
 
-        
-        public int countRepostoriesCommits(GitHubClient client, IReadOnlyList<Repository> repositories, string userLogin)
-        {
-            int commits = 0;
-            
-            foreach (var repository in repositories)
-            {
-                var commitsCount = countRepositoryCommits(client, repository.Id, userLogin);
-            //    commits = commits + commitsCount;
-            }
-
-            return commits;
-        }
-
-        public async Task<int> countRepositoryCommits(GitHubClient client, long repositoryId, string userLogin)
-        {
-            int commitsCount = 0;
-            var commits = await client.Repository.Commit.GetAll(repositoryId);
-
-        //    commitsCount = commits.Count();
-           
-            return commitsCount;
-
-        }
-
-        private static async Task<int> getCommitsByUser(GitHubClient client, string userLogin)
-        {
-            var commitsCount = 0;
-            var repositories = await client.Repository.GetAllForUser(userLogin);
-            foreach (var repository in repositories)
-            {
-                var commitsList = await client.Repository.Commit.GetAll(userLogin, repository.Name);
-                commitsCount += commitsList.Count;
-            }
-            return commitsCount;
-        }
     }
 }
